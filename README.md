@@ -1,6 +1,6 @@
 # tiny-sample
 
-A minimal React app (Vite) whose landing page shows "Hello World".
+A minimal React app (Vite) whose landing page shows "Welcome Home".
 
 ## Run it
 
