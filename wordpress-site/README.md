@@ -3,8 +3,8 @@
 A WordPress site in Docker with:
 
 - **`ninja-theme`**: a minimal custom theme (`wp-content/themes/ninja-theme`).
-- **`ninja-hello`**: a plugin with the shortcode `[ninja_hello name="..."]`, which prints `Hello, <name>!`. With no name, or a blank one, it prints `Hello, world!`.
-- **PHPUnit tests** for the greeting logic. They run without a WordPress install.
+- **`ninja-hello`**: a plugin with the shortcode `[ninja_hello name="..."]`, which prints `Hello, <name>!`. With no name, or a blank one, it prints `Hello, world!`. It also has `[ninja_time]`, which prints today's date (for example `2026-11-14`) in the site's timezone.
+- **PHPUnit tests** for the greeting and date logic. They run without a WordPress install.
 
 ## Layout
 
@@ -21,11 +21,14 @@ wordpress-site/
 │   ├── wp-config.php       # SQLite settings used by the preview
 │   └── router.php          # routes pretty permalinks for php -S
 ├── tests/GreeterTest.php
+├── tests/CurrentDateTest.php
 ├── tests/PreviewSiteTest.php
 └── wp-content/
     ├── plugins/ninja-hello/
-    │   ├── ninja-hello.php           # plugin file, registers the shortcode
-    │   └── includes/Greeter.php      # greeting logic (no WordPress calls)
+    │   ├── ninja-hello.php           # plugin file, registers the shortcodes
+    │   └── includes/
+    │       ├── Greeter.php           # greeting logic (no WordPress calls)
+    │       └── CurrentDate.php       # date text for [ninja_time] (no WordPress calls)
     └── themes/ninja-theme/           # style.css, index.php, functions.php
 ```
 
@@ -49,7 +52,7 @@ Requirements: Docker with Compose.
 
 3. Open http://localhost:8080 (or the `WP_PORT` you set). WordPress is already installed, so there is no installer. Log in at `/wp-admin` with `WP_ADMIN_USER` and `WP_ADMIN_PASSWORD` from `.env`.
 
-   On first start, `docker/ninja-bootstrap.sh` installs WordPress, activates **Ninja Theme** and **Ninja Hello**, and creates a **Home** page that contains `[ninja_hello name="Ada"]` as the front page. The home page should show `Hello, Ada!`.
+   On first start, `docker/ninja-bootstrap.sh` installs WordPress, activates **Ninja Theme** and **Ninja Hello**, and creates a **Home** page that contains `[ninja_hello name="Ada"]` and `[ninja_time]` as the front page. The home page should show `Hello, Ada!` and then today's date.
 
    The bootstrap only runs while WordPress is not yet installed. To start again from scratch, run `docker compose down -v` and then `docker compose up --build`.
 
@@ -61,7 +64,8 @@ If you already had a `.env` from before, add the `WP_ADMIN_PASSWORD` line from `
 
 The preview runs WordPress with PHP's built-in server and an SQLite database, so it needs no MySQL and no Docker. NinjaBots starts it with the `start` command in `ninjabots.json`, which runs `preview/start.sh`.
 
-- On the first start, `preview/bootstrap.php` installs WordPress with no wizard, activates **Ninja Theme** and **Ninja Hello**, and creates a **Home** page with `[ninja_hello name="Ada"]` as the front page. The home page shows `Hello, Ada!`.
+- On the first start, `preview/bootstrap.php` installs WordPress with no wizard, activates **Ninja Theme** and **Ninja Hello**, and creates a **Home** page with `[ninja_hello name="Ada"]` and `[ninja_time]` as the front page. The home page shows `Hello, Ada!` and then today's date.
+- The database is kept between starts, so a site installed before this change keeps its old Home page. To get the date on it, delete `wordpress-site/.preview/` and start again (this also resets the admin account and content).
 - The admin login is `WP_ADMIN_USER` (default `admin`). Set `WP_ADMIN_PASSWORD` to choose the password. If it is not set, a random password is generated and printed in the start log once.
 - The database and uploads are kept in `wordpress-site/.preview/` (git-ignored) between starts. Delete that folder to start from scratch.
 - To try it on your machine: `cd wordpress-site && PORT=8080 sh preview/start.sh`, then open http://localhost:8080.
@@ -77,7 +81,7 @@ composer install
 composer test
 ```
 
-`composer test` runs `vendor/bin/phpunit`. `GreeterTest` checks the greeting logic alone. `PreviewSiteTest` starts the preview on a free port with `preview/start.sh`, checks the home page, and checks that a second start doesn't reinstall. It is skipped if `pdo_sqlite` or `proc_open` is missing.
+`composer test` runs `vendor/bin/phpunit`. `GreeterTest` checks the greeting logic alone, and `CurrentDateTest` checks the date text alone. `PreviewSiteTest` starts the preview on a free port with `preview/start.sh`, checks the home page, and checks that a second start doesn't reinstall. It is skipped if `pdo_sqlite` or `proc_open` is missing.
 
 ## Notes
 

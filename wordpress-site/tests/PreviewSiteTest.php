@@ -63,6 +63,11 @@ final class PreviewSiteTest extends TestCase
             $body,
             "The home page does not show the shortcode. Page start:\n" . substr($body, 0, 1500) . "\nLog:\n" . $this->readLog()
         );
+        $this->assertMatchesRegularExpression(
+            '#<span class="ninja-time">\d{4}-\d{2}-\d{2}</span>#',
+            $body,
+            "The home page does not show the [ninja_time] date under the greeting. Page start:\n" . substr($body, 0, 1500)
+        );
     }
 
     public function testLinksAndStylesUseTheForwardedAddress(): void

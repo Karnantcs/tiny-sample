@@ -6,7 +6,7 @@
  *
  * It does what docker/ninja-bootstrap.sh does for the Docker setup: installs
  * WordPress with the admin account, activates ninja-theme and ninja-hello,
- * and creates a Home page with [ninja_hello name="Ada"] as the front page.
+ * and creates a Home page with [ninja_hello name="Ada"] and [ninja_time] as the front page.
  * If WordPress is already installed, nothing is changed.
  *
  * Settings come from the environment: WP_TITLE, WP_ADMIN_USER, WP_ADMIN_EMAIL
@@ -66,7 +66,7 @@ $home_id = wp_insert_post(
         'post_title' => 'Home',
         'post_status' => 'publish',
         'post_author' => 1,
-        'post_content' => '[ninja_hello name="Ada"]',
+        'post_content' => '[ninja_hello name="Ada"]' . "\n\n" . '[ninja_time]',
     ),
     true
 );
