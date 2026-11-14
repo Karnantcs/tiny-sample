@@ -5,7 +5,7 @@
 # wp-config.php and starts Apache. Once the database is reachable it:
 #   1. installs WordPress with the admin account from the environment,
 #   2. activates the Ninja Theme and the Ninja Hello plugin,
-#   3. creates a Home page with [ninja_hello] and makes it the front page.
+#   3. creates a Home page with [ninja_hello] and [ninja_time] and makes it the front page.
 # On later starts WordPress is already installed, so nothing is changed.
 set -u
 
@@ -60,9 +60,15 @@ WP="wp --path=$WEB_ROOT --allow-root"
     $WP plugin activate ninja-hello || exit 1
 
     home_id=$($WP post create --post_type=page --post_title=Home --post_status=publish \
-        --post_content='[ninja_hello name="Ada"]' --porcelain) || exit 1
+        --post_content='[ninja_hello name="Ada"]
+
+[ninja_time]' --porcelain) || exit 1
     $WP option update show_on_front page || exit 1
     $WP option update page_on_front "$home_id" || exit 1
+
+    $WP post create --post_type=page --post_title="Random Quote" --post_name=random-quote \
+        --post_status=publish --post_content='[ninja_quote]' --porcelain >/dev/null || exit 1
+    $WP rewrite structure '/%postname%/' --hard || exit 1
 
     echo "ninja-bootstrap: WordPress is ready (Home page id $home_id)"
 ) &

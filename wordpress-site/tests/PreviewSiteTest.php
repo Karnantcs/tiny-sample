@@ -63,6 +63,11 @@ final class PreviewSiteTest extends TestCase
             $body,
             "The home page does not show the shortcode. Page start:\n" . substr($body, 0, 1500) . "\nLog:\n" . $this->readLog()
         );
+        $this->assertMatchesRegularExpression(
+            '#<span class="ninja-time">\d{4}-\d{2}-\d{2}</span>#',
+            $body,
+            "The home page does not show the [ninja_time] date under the greeting. Page start:\n" . substr($body, 0, 1500)
+        );
     }
 
     public function testLinksAndStylesUseTheForwardedAddress(): void
@@ -94,6 +99,32 @@ final class PreviewSiteTest extends TestCase
         self::assertFalse(
             (bool) preg_match('#https?://localhost#', $body),
             "The page still links to localhost. URLs on the page:\n" . $urls
+        );
+    }
+
+    public function testRandomQuotePageHasTheQuoteBlockAndScript(): void
+    {
+        $port = $this->freePort();
+        $process = $this->startPreview($port);
+
+        try {
+            $this->waitForPage($process, $port);
+            [$status, $body] = $this->fetchPage($port, '', '/random-quote/');
+        } finally {
+            proc_terminate($process);
+            proc_close($process);
+        }
+
+        $this->assertStringStartsWith('HTTP/1.1 200', $status, "The Random Quote page did not load. Status: $status\nBody start:\n" . substr($body, 0, 800) . "\nLog:\n" . $this->readLog());
+        $this->assertStringContainsString(
+            '<figure class="ninja-quote" data-api-url="https://api.quotable.io/random">',
+            $body,
+            "The Random Quote page does not show the quote block. Page start:\n" . substr($body, 0, 1500)
+        );
+        $this->assertMatchesRegularExpression(
+            '#<script[^>]*src="[^"]*/assets/quote\.js\?ver=1\.0\.0"#',
+            $body,
+            "The Random Quote page does not load assets/quote.js."
         );
     }
 
@@ -172,16 +203,16 @@ final class PreviewSiteTest extends TestCase
     }
 
     /**
-     * Requests the home page once, with the given extra request headers, without following redirects.
+     * Requests a page once, with the given extra request headers, without following redirects.
      *
      * @return array{0: string, 1: string} The status line and the body.
      */
-    private function fetchPage(int $port, string $headers): array
+    private function fetchPage(int $port, string $headers, string $path = '/'): array
     {
         $context = stream_context_create([
             'http' => ['timeout' => 10, 'ignore_errors' => true, 'follow_location' => 0, 'header' => $headers],
         ]);
-        $body = @file_get_contents('http://127.0.0.1:' . $port . '/', false, $context);
+        $body = @file_get_contents('http://127.0.0.1:' . $port . $path, false, $context);
         if ($body === false) {
             self::fail("The preview did not answer the request.\n" . $this->readLog());
         }
