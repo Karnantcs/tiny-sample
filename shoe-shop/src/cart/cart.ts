@@ -1,4 +1,4 @@
-import { toCents } from '../lib/money';
+import { currentPriceCents } from '../lib/pricing';
 import type { CartItem, Product } from '../types';
 
 export const MIN_QUANTITY = 1;
@@ -55,6 +55,6 @@ export function cartCount(items: CartItem[]): number {
 export function cartSubtotalCents(items: CartItem[], products: Product[]): number {
   return items.reduce((total, item) => {
     const product = products.find((candidate) => candidate.id === item.productId);
-    return product ? total + toCents(product.price) * item.quantity : total;
+    return product ? total + currentPriceCents(product) * item.quantity : total;
   }, 0);
 }

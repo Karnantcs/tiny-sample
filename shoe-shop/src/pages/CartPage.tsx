@@ -1,10 +1,12 @@
 import { OrderSummary } from '../components/OrderSummary';
+import { Price } from '../components/Price';
 import { ShoeArt } from '../components/ShoeArt';
 import { cartSubtotalCents, lineKey, MAX_QUANTITY, MIN_QUANTITY } from '../cart/cart';
 import { useCart } from '../cart/CartContext';
 import { getCategory, products } from '../data/catalog';
-import { formatUsd, toCents } from '../lib/money';
+import { formatUsd } from '../lib/money';
 import { buildHash } from '../lib/router';
+import { currentPriceCents } from '../lib/pricing';
 import { computeTotals } from '../lib/totals';
 
 export function CartPage() {
@@ -52,7 +54,9 @@ export function CartPage() {
                   <p className="muted">
                     {category?.name} · {item.color} · Size {item.size}
                   </p>
-                  <p className="cart-line__price">{formatUsd(toCents(product.price))} each</p>
+                  <p className="cart-line__price">
+                    <Price product={product} /> each
+                  </p>
                 </div>
                 <div className="cart-line__controls">
                   <div className="quantity" role="group" aria-label={`Quantity for ${product.name}`}>
@@ -74,7 +78,7 @@ export function CartPage() {
                       +
                     </button>
                   </div>
-                  <p className="cart-line__total">{formatUsd(toCents(product.price) * item.quantity)}</p>
+                  <p className="cart-line__total">{formatUsd(currentPriceCents(product) * item.quantity)}</p>
                   <button type="button" className="text-link text-link--danger" onClick={() => remove(key)}>
                     Remove
                   </button>

@@ -19,6 +19,8 @@ export interface Product {
   colors: ProductColor[];
   description: string;
   featured: boolean;
+  /** Whole-number sale discount in percent (1 to 99). Leave out when the product is not on sale. */
+  salePercent?: number;
 }
 
 export interface Catalog {

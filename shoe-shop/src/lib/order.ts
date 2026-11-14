@@ -1,4 +1,4 @@
-import { toCents } from './money';
+import { currentPriceCents } from './pricing';
 import { computeTotals } from './totals';
 import type { CartItem, Order, Product, ShippingDetails } from '../types';
 
@@ -37,7 +37,7 @@ export function buildOrder(input: BuildOrderInput): Order {
         size: item.size,
         color: item.color,
         quantity: item.quantity,
-        unitPriceCents: toCents(product.price),
+        unitPriceCents: currentPriceCents(product),
       },
     ];
   });

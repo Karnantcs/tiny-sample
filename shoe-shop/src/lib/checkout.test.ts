@@ -72,6 +72,25 @@ describe('order building', () => {
     expect(order.createdAt).toBe('2025-06-15T12:00:00.000Z');
   });
 
+  it('charges the sale price on discounted shoes', () => {
+    const order = buildOrder({
+      orderNumber: 'STR-TEST-0003',
+      items: [{ productId: 'kid-bounce-runner', size: 8, color: 'Blue', quantity: 2 }],
+      products,
+      shipping: shippingOk,
+      transactionId: 'mock_tx',
+      cardLast4: '4242',
+    });
+    // 2 x $39.20 (20% off $49.00) = $78.40, flat shipping $8.00, tax 8% of $78.40 = $6.27 (rounded).
+    expect(order.lines[0]).toMatchObject({ name: 'Bounce Runner Jr', unitPriceCents: 3920, quantity: 2 });
+    expect(order.totals).toEqual({
+      subtotalCents: 7840,
+      shippingCents: 800,
+      taxCents: 627,
+      totalCents: 9267,
+    });
+  });
+
   it('skips cart lines for products that no longer exist', () => {
     const order = buildOrder({
       orderNumber: 'STR-TEST-0002',

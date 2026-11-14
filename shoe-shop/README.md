@@ -1,7 +1,7 @@
 # Stride: online shoe store
 
-Stride is a small shoe store built with React, TypeScript and Vite. It has a catalogue of four
-categories with three shoes each, a shop with filters, a cart, checkout and an order confirmation.
+Stride is a small shoe store built with React, TypeScript and Vite. It has a catalogue of five
+categories (Running, Casual Sneakers, Formal Leather, Sandals and Kids) with three shoes each, a shop with filters, a cart, checkout and an order confirmation.
 Routes use hashes (`#/shop`, `#/product/run-sprint-lite`), so the app works under any path.
 
 ## Run it
@@ -45,13 +45,18 @@ Add an entry to `products` in `src/data/products.json`:
 }
 ```
 
-Use one of the existing category ids (`running`, `casual`, `formal`, `sandals`). The shoe's drawing
-follows its category. The tests check that sizes are between 6 and 12 and that every product has a
+Use one of the existing category ids (`running`, `casual`, `formal`, `sandals`, `kids`). The shoe's
+drawing follows its category.
+
+To put a product on sale, add `"salePercent": 20` (a whole number from 1 to 99). The shop shows the old
+price struck through, a Sale badge, and the sale price. The cart, the order and price sorting all use the
+sale price. Leave the field out for full price. The tests check that sizes are between 6 and 12 and that every product has a
 known category.
 
 ## Pricing rules
 
 - Prices are in US dollars and are converted to cents before any arithmetic.
+- A sale takes `salePercent` off the list price, rounded to the nearest cent (`src/lib/pricing.ts`).
 - Shipping is free for subtotals **over** $100. Otherwise it is a flat $8. An empty cart has no shipping.
 - Tax is 8% of the subtotal, rounded to the nearest cent. Shipping is not taxed.
 - All of this is in `src/lib/totals.ts`.

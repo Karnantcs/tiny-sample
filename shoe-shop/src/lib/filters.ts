@@ -1,4 +1,5 @@
 import { ALL_SIZES } from '../data/catalog';
+import { currentPriceCents } from './pricing';
 import type { Product } from '../types';
 
 export const SORT_OPTIONS = ['featured', 'price-asc', 'price-desc'] as const;
@@ -25,10 +26,10 @@ export function filterProducts(products: Product[], filters: ShopFilters): Produ
       (filters.size === null || product.sizes.includes(filters.size)),
   );
   if (filters.sort === 'price-asc') {
-    return [...matching].sort((a, b) => a.price - b.price);
+    return [...matching].sort((a, b) => currentPriceCents(a) - currentPriceCents(b));
   }
   if (filters.sort === 'price-desc') {
-    return [...matching].sort((a, b) => b.price - a.price);
+    return [...matching].sort((a, b) => currentPriceCents(b) - currentPriceCents(a));
   }
   return matching;
 }

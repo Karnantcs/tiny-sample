@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ShoeArt } from '../components/ShoeArt';
 import { useCart } from '../cart/CartContext';
+import { Price, SaleBadge } from '../components/Price';
 import { getCategory, getProduct } from '../data/catalog';
-import { formatUsd, toCents } from '../lib/money';
 import { buildHash } from '../lib/router';
 import type { Product } from '../types';
 
@@ -72,7 +72,10 @@ function ProductDetail({ product }: { product: Product }) {
         <div className="product-detail__info">
           <p className="product-card__category">{category?.name}</p>
           <h1 className="page-title">{product.name}</h1>
-          <p className="product-detail__price">{formatUsd(toCents(product.price))}</p>
+          <p className="product-detail__price">
+            <Price product={product} />
+          </p>
+          <SaleBadge product={product} />
           <p>{product.description}</p>
 
           <fieldset className="option-group">

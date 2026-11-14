@@ -46,6 +46,7 @@ function renderShape(categoryId: string, color: string, accent: string) {
         </g>
       );
     case 'casual':
+    case 'kids':
       return (
         <g>
           <path d="M22 98 V56 Q22 42 38 42 H64 Q76 66 118 70 Q158 72 178 92 V104 H22 Z" fill={color} />

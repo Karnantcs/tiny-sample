@@ -7,6 +7,7 @@ import {
   toShopQuery,
   type ShopFilters,
 } from './filters';
+import { currentPriceCents } from './pricing';
 
 function withFilters(overrides: Partial<ShopFilters>): ShopFilters {
   return { ...DEFAULT_FILTERS, ...overrides };
@@ -14,7 +15,7 @@ function withFilters(overrides: Partial<ShopFilters>): ShopFilters {
 
 describe('shop filters: category', () => {
   it('shows every product when no category is chosen', () => {
-    expect(filterProducts(products, DEFAULT_FILTERS)).toHaveLength(12);
+    expect(filterProducts(products, DEFAULT_FILTERS)).toHaveLength(15);
   });
 
   it('shows only the chosen category', () => {
@@ -50,13 +51,20 @@ describe('shop filters: size', () => {
 
 describe('shop filters: sorting by price', () => {
   it('sorts low to high', () => {
-    const prices = filterProducts(products, withFilters({ sort: 'price-asc' })).map((p) => p.price);
+    const prices = filterProducts(products, withFilters({ sort: 'price-asc' })).map(currentPriceCents);
     expect(prices).toEqual([...prices].sort((a, b) => a - b));
   });
 
   it('sorts high to low', () => {
-    const prices = filterProducts(products, withFilters({ sort: 'price-desc' })).map((p) => p.price);
+    const prices = filterProducts(products, withFilters({ sort: 'price-desc' })).map(currentPriceCents);
     expect(prices).toEqual([...prices].sort((a, b) => b - a));
+  });
+
+  it('sorts by the sale price, so a discounted shoe moves down the list', () => {
+    // Sale prices: Hook & Loop $31.20, Bounce Runner Jr $39.20, Splash Rain Boot $42.00.
+    // At list prices the order would be Hook & Loop, Splash, Bounce Runner, so this checks the sale is used.
+    const ids = filterProducts(products, withFilters({ category: 'kids', sort: 'price-asc' })).map((p) => p.id);
+    expect(ids).toEqual(['kid-hook-loop', 'kid-bounce-runner', 'kid-splash-boot']);
   });
 
   it('keeps catalogue order for "featured"', () => {
