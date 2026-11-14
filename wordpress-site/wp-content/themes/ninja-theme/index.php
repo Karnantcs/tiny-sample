@@ -35,7 +35,7 @@ if (!defined('ABSPATH')) {
 </main>
 
 <footer class="site-footer">
-    &copy; <?php echo esc_html(gmdate('Y')); ?> <?php bloginfo('name'); ?>
+    &copy; 2026 Ninja Site, built with NinjaBots
 </footer>
 <?php wp_footer(); ?>
 </body>
