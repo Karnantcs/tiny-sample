@@ -1,0 +1,228 @@
+{
+  "categories": [
+    {
+      "id": "running",
+      "name": "Running",
+      "description": "Light, cushioned shoes for road miles and daily training."
+    },
+    {
+      "id": "casual",
+      "name": "Casual Sneakers",
+      "description": "Everyday sneakers that go with jeans, chinos and everything else."
+    },
+    {
+      "id": "formal",
+      "name": "Formal Leather",
+      "description": "Polished leather shoes for offices, weddings and smart evenings."
+    },
+    {
+      "id": "sandals",
+      "name": "Sandals",
+      "description": "Open, breathable sandals for warm days and the beach."
+    },
+    {
+      "id": "kids",
+      "name": "Kids",
+      "description": "Comfortable, durable shoes for growing feet and everyday play."
+    }
+  ],
+  "products": [
+    {
+      "id": "run-velocity-pro",
+      "name": "Velocity Pro Runner",
+      "categoryId": "running",
+      "price": 139.0,
+      "sizes": [6, 7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "Black", "hex": "#1f1f24" },
+        { "name": "Electric Blue", "hex": "#2563eb" }
+      ],
+      "description": "A responsive daily trainer with a springy midsole and a breathable knit upper for long, steady miles.",
+      "featured": true
+    },
+    {
+      "id": "run-trail-blaze",
+      "name": "Trail Blaze 2",
+      "categoryId": "running",
+      "price": 119.0,
+      "sizes": [6, 7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "Olive", "hex": "#5b6b3a" },
+        { "name": "Sand", "hex": "#d6c3a1" }
+      ],
+      "description": "Grippy outsole and a reinforced toe for dirt paths and gravel, with enough cushion for road days too.",
+      "featured": false
+    },
+    {
+      "id": "run-sprint-lite",
+      "name": "Sprint Lite",
+      "categoryId": "running",
+      "price": 89.0,
+      "sizes": [6, 7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "White", "hex": "#f5f5f5" },
+        { "name": "Coral", "hex": "#ff6b57" }
+      ],
+      "description": "Our lightest runner, built for tempo sessions and short, fast intervals on the track.",
+      "featured": false
+    },
+    {
+      "id": "cas-urban-court",
+      "name": "Urban Court Low",
+      "categoryId": "casual",
+      "price": 79.0,
+      "sizes": [6, 7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "White", "hex": "#ffffff" },
+        { "name": "Navy", "hex": "#1e3a5f" }
+      ],
+      "description": "A clean low-top court sneaker with a cushioned insole and a soft leather-look upper.",
+      "featured": true
+    },
+    {
+      "id": "cas-canvas-hi",
+      "name": "Canvas Classic Hi",
+      "categoryId": "casual",
+      "price": 65.0,
+      "sizes": [6, 7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "Charcoal", "hex": "#3f3f46" },
+        { "name": "Red", "hex": "#b91c1c" }
+      ],
+      "description": "A high-top canvas sneaker with a rubber toe cap and a classic lace-up fit.",
+      "featured": false
+    },
+    {
+      "id": "cas-street-slip",
+      "name": "Street Slip-On",
+      "categoryId": "casual",
+      "price": 59.0,
+      "sizes": [6, 7, 8, 9, 10, 11],
+      "colors": [
+        { "name": "Tan", "hex": "#b08968" },
+        { "name": "Black", "hex": "#1f1f24" }
+      ],
+      "description": "No laces needed. An elastic-panel slip-on with a flexible sole for quick, easy wear.",
+      "featured": false
+    },
+    {
+      "id": "for-oxford-classic",
+      "name": "Oxford Classic",
+      "categoryId": "formal",
+      "price": 189.0,
+      "sizes": [7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "Black", "hex": "#111111" },
+        { "name": "Dark Brown", "hex": "#5c3a21" }
+      ],
+      "description": "Full-grain leather oxford with a closed lace-up front, leather lining and a stacked leather heel.",
+      "featured": true
+    },
+    {
+      "id": "for-derby-wingtip",
+      "name": "Derby Wingtip",
+      "categoryId": "formal",
+      "price": 169.0,
+      "sizes": [7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "Oxblood", "hex": "#6b1e1e" },
+        { "name": "Tan", "hex": "#b5835a" }
+      ],
+      "description": "A derby with a wingtip toe cap and open lacing, suited to both business and dress-down events.",
+      "featured": false
+    },
+    {
+      "id": "for-monk-brogue",
+      "name": "Monk Strap Brogue",
+      "categoryId": "formal",
+      "price": 199.0,
+      "sizes": [7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "Brown", "hex": "#7b4a2a" },
+        { "name": "Black", "hex": "#111111" }
+      ],
+      "description": "A double monk strap with decorative brogue perforations on a sturdy leather sole.",
+      "featured": false
+    },
+    {
+      "id": "san-breeze-strap",
+      "name": "Breeze Strap Sandal",
+      "categoryId": "sandals",
+      "price": 54.0,
+      "sizes": [6, 7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "Tan", "hex": "#c8a27a" },
+        { "name": "Black", "hex": "#1f1f24" }
+      ],
+      "description": "An adjustable two-strap sandal with a contoured footbed and a non-slip sole.",
+      "featured": true
+    },
+    {
+      "id": "san-trek-sport",
+      "name": "Trek Sport Sandal",
+      "categoryId": "sandals",
+      "price": 79.0,
+      "sizes": [6, 7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "Grey", "hex": "#6b7280" },
+        { "name": "Teal", "hex": "#0f766e" }
+      ],
+      "description": "A sport sandal with a secure heel strap and a grippy outsole for hikes and river crossings.",
+      "featured": false
+    },
+    {
+      "id": "san-sunset-slide",
+      "name": "Sunset Slide",
+      "categoryId": "sandals",
+      "price": 32.0,
+      "sizes": [6, 7, 8, 9, 10, 11, 12],
+      "colors": [
+        { "name": "Coral", "hex": "#ff7a59" },
+        { "name": "White", "hex": "#f5f5f5" }
+      ],
+      "description": "A soft, lightweight slide with a cushioned footbed. Easy to pull on for pool days and quick errands.",
+      "featured": false
+    },
+    {
+      "id": "kid-bounce-runner",
+      "name": "Bounce Runner Jr",
+      "categoryId": "kids",
+      "price": 49.0,
+      "salePercent": 20,
+      "sizes": [6, 7, 8, 9, 10, 11],
+      "colors": [
+        { "name": "Blue", "hex": "#2563eb" },
+        { "name": "Lime", "hex": "#84cc16" }
+      ],
+      "description": "A light, flexible trainer with a cushioned midsole and a breathable mesh upper for playground runs.",
+      "featured": false
+    },
+    {
+      "id": "kid-hook-loop",
+      "name": "Hook & Loop Sneaker",
+      "categoryId": "kids",
+      "price": 39.0,
+      "salePercent": 20,
+      "sizes": [6, 7, 8, 9, 10, 11],
+      "colors": [
+        { "name": "Navy", "hex": "#1e3a5f" },
+        { "name": "Red", "hex": "#b91c1c" }
+      ],
+      "description": "Two easy hook-and-loop straps let little feet get on and off fast, with a grippy rubber sole.",
+      "featured": false
+    },
+    {
+      "id": "kid-splash-boot",
+      "name": "Splash Rain Boot",
+      "categoryId": "kids",
+      "price": 42.0,
+      "sizes": [6, 7, 8, 9, 10, 11],
+      "colors": [
+        { "name": "Yellow", "hex": "#facc15" },
+        { "name": "Green", "hex": "#15803d" }
+      ],
+      "description": "A waterproof rubber boot with a pull-tab at the back and a non-slip sole for puddles and muddy fields.",
+      "featured": false
+    }
+  ]
+}
