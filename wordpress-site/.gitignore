@@ -1,0 +1,6 @@
+.env
+vendor/
+.phpunit.cache/
+.phpunit.result.cache
+# NinjaBots preview: the generated web root with the SQLite database (see preview/start.sh)
+.preview/
