@@ -31,16 +31,10 @@ if [ -z "$CORE" ]; then
     exit 1
 fi
 
-# The SQLite drop-in: the Composer package if installed, else the copy in the repo.
-DROPIN=""
-for file in "$SITE/vendor/aaemnnosttv/wp-sqlite-db/src/db.php" "$SITE/wp-content/wp-sqlite-db/src/db.php"; do
-    if [ -f "$file" ]; then
-        DROPIN="$file"
-        break
-    fi
-done
-if [ -z "$DROPIN" ]; then
-    echo "preview: the wp-sqlite-db drop-in was not found." >&2
+# The SQLite drop-in, installed by Composer into vendor/ (see installer-paths in composer.json).
+DROPIN="$SITE/vendor/aaemnnosttv/wp-sqlite-db/src/db.php"
+if [ ! -f "$DROPIN" ]; then
+    echo "preview: the wp-sqlite-db drop-in was not found. Run 'composer install' in wordpress-site first." >&2
     exit 1
 fi
 

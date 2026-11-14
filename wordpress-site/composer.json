@@ -25,7 +25,10 @@
         "test": "phpunit"
     },
     "extra": {
-        "wordpress-install-dir": "wordpress"
+        "wordpress-install-dir": "wordpress",
+        "installer-paths": {
+            "vendor/{$vendor}/{$name}/": ["type:wordpress-dropin"]
+        }
     },
     "config": {
         "sort-packages": true,
