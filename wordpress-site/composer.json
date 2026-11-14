@@ -1,0 +1,28 @@
+{
+    "name": "ninja/wordpress-site",
+    "description": "WordPress site with the ninja-theme and ninja-hello plugin. Tests run without a WordPress install.",
+    "type": "project",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "NinjaHello\\": "wp-content/plugins/ninja-hello/includes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NinjaHello\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
