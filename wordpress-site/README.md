@@ -33,7 +33,7 @@ Requirements: Docker with Compose.
    cp .env.example .env
    ```
 
-   Edit `.env` and set `MYSQL_PASSWORD` and `MYSQL_ROOT_PASSWORD` to your own values.
+   Edit `.env` and set `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD` and `WP_ADMIN_PASSWORD` to your own values.
 
 2. Build and start the containers:
 
@@ -41,17 +41,15 @@ Requirements: Docker with Compose.
    docker compose up --build
    ```
 
-3. Open http://localhost:8080 (or the `WP_PORT` you set) and finish the WordPress installer.
+3. Open http://localhost:8080 (or the `WP_PORT` you set). WordPress is already installed, so there is no installer. Log in at `/wp-admin` with `WP_ADMIN_USER` and `WP_ADMIN_PASSWORD` from `.env`.
 
-4. In the admin, go to **Appearance → Themes** and activate **Ninja Theme**. Go to **Plugins** and activate **Ninja Hello**.
+   On first start, `docker/ninja-bootstrap.sh` installs WordPress, activates **Ninja Theme** and **Ninja Hello**, and creates a **Home** page that contains `[ninja_hello name="Ada"]` as the front page. The home page should show `Hello, Ada!`.
 
-5. Put this in a page or post to test the shortcode:
-
-   ```
-   [ninja_hello name="Ada"]
-   ```
+   The bootstrap only runs while WordPress is not yet installed. To start again from scratch, run `docker compose down -v` and then `docker compose up --build`.
 
 To stop the site, run `docker compose down`. To also delete the database and uploads, run `docker compose down -v`.
+
+If you already had a `.env` from before, add the `WP_ADMIN_PASSWORD` line from `.env.example`. Compose won't start without it.
 
 ## Run the tests
 

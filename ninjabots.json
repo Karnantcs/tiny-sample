@@ -1,5 +1,5 @@
 {
   "install": "cd wordpress-site && composer install --no-interaction --no-progress",
   "test": "cd wordpress-site && vendor/bin/phpunit",
-  "build": "cd wordpress-site && php -l wp-content/plugins/ninja-hello/ninja-hello.php && php -l wp-content/plugins/ninja-hello/includes/Greeter.php && php -l wp-content/themes/ninja-theme/functions.php && php -l wp-content/themes/ninja-theme/index.php"
+  "build": "cd wordpress-site && php -l wp-content/plugins/ninja-hello/ninja-hello.php && php -l wp-content/plugins/ninja-hello/includes/Greeter.php && php -l wp-content/themes/ninja-theme/functions.php && php -l wp-content/themes/ninja-theme/index.php && sh -n docker/ninja-bootstrap.sh"
 }
