@@ -65,6 +65,38 @@ final class PreviewSiteTest extends TestCase
         );
     }
 
+    public function testLinksAndStylesUseTheForwardedAddress(): void
+    {
+        $port = $this->freePort();
+        $process = $this->startPreview($port);
+
+        try {
+            $this->waitForPage($process, $port);
+            $headers = "X-Forwarded-Proto: https\r\n"
+                . "X-Forwarded-Host: ninja.example.test\r\n"
+                . "X-Forwarded-Prefix: /preview/\r\n";
+            [$status, $body] = $this->fetchPage($port, $headers);
+        } finally {
+            proc_terminate($process);
+            proc_close($process);
+        }
+
+        $this->assertStringStartsWith('HTTP/1.1 200', $status, "The page did not load. Status: $status\nBody start:\n" . substr($body, 0, 800) . "\nLog:\n" . $this->readLog());
+        preg_match_all('#https?://[^"\'\s<>]+#', $body, $found);
+        $urls = implode(' ', array_unique($found[0]));
+
+        if (!str_contains($body, 'href="https://ninja.example.test/preview/"')) {
+            self::fail('The home link does not use the forwarded address. URLs on the page: ' . $urls);
+        }
+        if (!str_contains($body, 'https://ninja.example.test/preview/wp-content/themes/ninja-theme/style.css')) {
+            self::fail('The theme stylesheet does not use the forwarded address. URLs on the page: ' . $urls);
+        }
+        self::assertFalse(
+            (bool) preg_match('#https?://localhost#', $body),
+            "The page still links to localhost. URLs on the page:\n" . $urls
+        );
+    }
+
     public function testStartingAgainDoesNotReinstall(): void
     {
         $port = $this->freePort();
@@ -137,6 +169,31 @@ final class PreviewSiteTest extends TestCase
         }
 
         self::fail("The preview did not answer within " . self::START_TIMEOUT_SECONDS . " seconds.\n" . $this->readLog());
+    }
+
+    /**
+     * Requests the home page once, with the given extra request headers, without following redirects.
+     *
+     * @return array{0: string, 1: string} The status line and the body.
+     */
+    private function fetchPage(int $port, string $headers): array
+    {
+        $context = stream_context_create([
+            'http' => ['timeout' => 10, 'ignore_errors' => true, 'follow_location' => 0, 'header' => $headers],
+        ]);
+        $body = @file_get_contents('http://127.0.0.1:' . $port . '/', false, $context);
+        if ($body === false) {
+            self::fail("The preview did not answer the request.\n" . $this->readLog());
+        }
+
+        $status = $http_response_header[0] ?? '';
+        foreach ($http_response_header ?? [] as $line) {
+            if (stripos($line, 'Location:') === 0) {
+                $status .= ' ' . $line;
+            }
+        }
+
+        return [$status, $body];
     }
 
     /**
