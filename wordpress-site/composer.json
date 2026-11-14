@@ -4,7 +4,9 @@
     "type": "project",
     "license": "GPL-2.0-or-later",
     "require": {
-        "php": ">=8.1"
+        "php": ">=8.1",
+        "johnpbloch/wordpress-core": "^6.8",
+        "aaemnnosttv/wp-sqlite-db": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.5"
@@ -22,7 +24,14 @@
     "scripts": {
         "test": "phpunit"
     },
+    "extra": {
+        "wordpress-install-dir": "wordpress"
+    },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "johnpbloch/wordpress-core-installer": true,
+            "composer/installers": true
+        }
     }
 }
