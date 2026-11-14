@@ -66,6 +66,10 @@ WP="wp --path=$WEB_ROOT --allow-root"
     $WP option update show_on_front page || exit 1
     $WP option update page_on_front "$home_id" || exit 1
 
+    $WP post create --post_type=page --post_title="Random Quote" --post_name=random-quote \
+        --post_status=publish --post_content='[ninja_quote]' --porcelain >/dev/null || exit 1
+    $WP rewrite structure '/%postname%/' --hard || exit 1
+
     echo "ninja-bootstrap: WordPress is ready (Home page id $home_id)"
 ) &
 

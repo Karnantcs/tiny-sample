@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Ninja Hello
- * Description: Adds the [ninja_hello name="..."] shortcode, which prints a greeting, and [ninja_time], which prints the current date.
+ * Description: Adds the [ninja_hello name="..."] shortcode, which prints a greeting, [ninja_time], which prints the current date, and [ninja_quote], which shows a random quote.
  * Version:     1.0.0
  * Requires PHP: 8.1
  * License:     GPL-2.0-or-later
@@ -54,3 +54,33 @@ function ninja_time_shortcode($atts): string
 }
 
 add_shortcode('ninja_time', 'ninja_time_shortcode');
+
+/** Random quote API used by [ninja_quote]. */
+const NINJA_QUOTE_API_URL = 'https://api.quotable.io/random';
+
+/**
+ * Render the [ninja_quote] shortcode.
+ *
+ * The server does not fetch the quote. It prints a placeholder with the API address,
+ * and assets/quote.js asks the API from the browser when the page loads.
+ *
+ * @param array|string $atts Shortcode attributes. None are used.
+ * @return string HTML for the quote block.
+ */
+function ninja_quote_shortcode($atts): string
+{
+    wp_enqueue_script(
+        'ninja-quote',
+        plugins_url('assets/quote.js', __FILE__),
+        array(),
+        '1.0.0',
+        true
+    );
+
+    return '<figure class="ninja-quote" data-api-url="' . esc_url(NINJA_QUOTE_API_URL) . '">'
+        . '<blockquote class="ninja-quote-text">Loading a quote&hellip;</blockquote>'
+        . '<figcaption class="ninja-quote-author"></figcaption>'
+        . '</figure>';
+}
+
+add_shortcode('ninja_quote', 'ninja_quote_shortcode');

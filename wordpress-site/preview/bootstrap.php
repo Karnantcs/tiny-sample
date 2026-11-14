@@ -7,7 +7,8 @@
  * It does what docker/ninja-bootstrap.sh does for the Docker setup: installs
  * WordPress with the admin account, activates ninja-theme and ninja-hello,
  * and creates a Home page with [ninja_hello name="Ada"] and [ninja_time] as the front page.
- * If WordPress is already installed, nothing is changed.
+ * It also adds a Random Quote page at /random-quote/ with [ninja_quote], to a new
+ * install or an existing one that doesn't have it yet. Other content is not changed.
  *
  * Settings come from the environment: WP_TITLE, WP_ADMIN_USER, WP_ADMIN_EMAIL
  * and WP_ADMIN_PASSWORD. If no password is set, a random one is generated and
@@ -36,7 +37,40 @@ define('WP_INSTALLING', true);
 require $root . '/wp-load.php';
 require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
+/**
+ * Makes sure the Random Quote page exists, so a site installed before it was added gets it.
+ * Also sets pretty permalinks, so the page is at /random-quote/. Existing content is not changed.
+ */
+function ninja_ensure_quote_page(): void
+{
+    if (get_page_by_path('random-quote', OBJECT, 'page') === null) {
+        $quote_id = wp_insert_post(
+            array(
+                'post_type' => 'page',
+                'post_title' => 'Random Quote',
+                'post_name' => 'random-quote',
+                'post_status' => 'publish',
+                'post_author' => 1,
+                'post_content' => '[ninja_quote]',
+            ),
+            true
+        );
+        if (is_wp_error($quote_id)) {
+            fwrite(STDERR, 'preview: could not create the Random Quote page: ' . $quote_id->get_error_message() . "\n");
+            exit(1);
+        }
+        echo "preview: added the Random Quote page (id $quote_id)\n";
+    }
+
+    if (get_option('permalink_structure') === '') {
+        global $wp_rewrite;
+        $wp_rewrite->set_permalink_structure('/%postname%/');
+        flush_rewrite_rules(false);
+    }
+}
+
 if (is_blog_installed()) {
+    ninja_ensure_quote_page();
     echo "preview: WordPress is already installed\n";
     exit(0);
 }
@@ -77,6 +111,8 @@ if (is_wp_error($home_id)) {
 
 update_option('show_on_front', 'page');
 update_option('page_on_front', $home_id);
+
+ninja_ensure_quote_page();
 
 echo "preview: WordPress is ready (Home page id $home_id)\n";
 if ($generated) {
