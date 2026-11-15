@@ -4,7 +4,8 @@ A WordPress site in Docker with:
 
 - **`ninja-theme`**: a minimal custom theme (`wp-content/themes/ninja-theme`).
 - **`ninja-hello`**: a plugin with the shortcode `[ninja_hello name="..."]`, which prints `Hello, <name>!`. With no name, or a blank one, it prints `Hello, world!`.
-- **PHPUnit tests** for the greeting logic. They run without a WordPress install.
+- **`ninja-shows`**: a ticket shop for shows, with a **mock payment gateway**. Shows, prices, dates and stock are managed in wp-admin. The shop is the `[ninja_shows]` shortcode, on the **Shows** page.
+- **PHPUnit tests** for the greeting, money, card, checkout and mock payment logic. They run without a WordPress install.
 
 ## Layout
 
@@ -20,14 +21,32 @@ wordpress-site/
 │   ├── bootstrap.php       # installs WordPress once, with no wizard
 │   ├── wp-config.php       # SQLite settings used by the preview
 │   └── router.php          # routes pretty permalinks for php -S
-├── tests/GreeterTest.php
-├── tests/PreviewSiteTest.php
+├── tests/                      # PHPUnit: Greeter, Money, CardValidator, ShowFields, Checkout, MockGateway, PreviewSite
 └── wp-content/
     ├── plugins/ninja-hello/
     │   ├── ninja-hello.php           # plugin file, registers the shortcode
     │   └── includes/Greeter.php      # greeting logic (no WordPress calls)
+    ├── plugins/ninja-shows/
+    │   ├── ninja-shows.php           # plugin file, loads the classes and hooks
+    │   └── includes/                 # Money, CardValidator, ShowFields, Checkout (no WordPress calls)
+    │       ├── Payments/             # PaymentGateway interface, MockGateway, request and result
+    │       ├── PostTypes.php         # Show and Order post types, admin fields
+    │       ├── Setup.php             # on activation: Shows page and sample shows
+    │       └── Shop.php              # [ninja_shows] shortcode, checkout and confirmation
     └── themes/ninja-theme/           # style.css, index.php, functions.php
 ```
+
+## Ticket shop (ninja-shows)
+
+The shop sells show tickets. Payments go through a mock gateway, so no real money moves. When the real gateway is ready, it replaces the mock without changing the checkout.
+
+- **Shows** are a post type in wp-admin. Each show has a price (USD, e.g. `45.00`), a date and time, a venue and the number of tickets available. Set tickets to 0 to mark a show sold out.
+- The **Shows** page holds `[ninja_shows]`. It lists upcoming shows, opens checkout with `?ninja_show=ID`, and shows the confirmation at `?ninja_order=KEY`.
+- **Checkout** asks for name, email, ticket count (up to 10 and no more than are left), and card details. The card number must pass the Luhn check and the expiry date must not have passed.
+- **Mock test cards**: `4242 4242 4242 4242` is approved. `4000 0000 0000 0002` is declined (card_declined). `4000 0000 0000 9995` is declined (insufficient_funds). Any other Luhn-valid number is approved.
+- Orders are stored as **Orders** in wp-admin. No card number or security code is stored, only the last four digits.
+- To use a real gateway later, implement `NinjaShows\Payments\PaymentGateway` and return it from the `ninja_shows_payment_gateway` filter.
+- Known limits: the ticket count is not locked, so two buyers at the same moment could both get the last ticket. Dates use the site's time zone. Activating the plugin adds three sample shows, if the site has no shows yet.
 
 ## Run the site with Docker
 

@@ -47,9 +47,10 @@ fi
 cp "$HERE/wp-config.php" "$HERE/router.php" "$RUN/"
 cp "$DROPIN" "$RUN/wp-content/db.php"
 mkdir -p "$RUN/wp-content/themes" "$RUN/wp-content/plugins"
-rm -rf "$RUN/wp-content/themes/ninja-theme" "$RUN/wp-content/plugins/ninja-hello"
+rm -rf "$RUN/wp-content/themes/ninja-theme" "$RUN/wp-content/plugins/ninja-hello" "$RUN/wp-content/plugins/ninja-shows"
 cp -R "$SITE/wp-content/themes/ninja-theme" "$RUN/wp-content/themes/"
 cp -R "$SITE/wp-content/plugins/ninja-hello" "$RUN/wp-content/plugins/"
+cp -R "$SITE/wp-content/plugins/ninja-shows" "$RUN/wp-content/plugins/"
 
 "$PHP" -d memory_limit=256M "$HERE/bootstrap.php" "$RUN"
 

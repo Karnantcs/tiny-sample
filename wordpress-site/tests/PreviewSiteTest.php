@@ -114,6 +114,104 @@ final class PreviewSiteTest extends TestCase
         $this->assertStringNotContainsString('installing WordPress', $output);
     }
 
+    public function testShopListsSampleShowsAndSoldOutStock(): void
+    {
+        $port = $this->freePort();
+        $process = $this->startPreview($port);
+
+        try {
+            $this->waitForPage($process, $port);
+            [$status, , $body] = $this->request($port, '/?pagename=shows');
+        } finally {
+            proc_terminate($process);
+            proc_close($process);
+        }
+
+        $this->assertStringStartsWith('HTTP/1.1 200', $status, "The Shows page did not load.\nLog:\n" . $this->readLog());
+        $this->assertStringContainsString('The Midnight Orchestra', $body);
+        $this->assertStringContainsString('Sold out', $body);
+        $this->assertStringContainsString('$45.00', $body);
+    }
+
+    public function testMockPaymentApprovesAndDeclinesTicketPurchases(): void
+    {
+        $port = $this->freePort();
+        $process = $this->startPreview($port);
+
+        try {
+            $this->waitForPage($process, $port);
+
+            [, , $list] = $this->request($port, '/?pagename=shows');
+            $this->assertSame(1, preg_match('/ninja_show=(\d+)/', $list, $showMatch), "No show is on sale.\n" . $list);
+            $showId = $showMatch[1];
+
+            [, , $checkout] = $this->request($port, '/?pagename=shows&ninja_show=' . $showId);
+            $this->assertSame(1, preg_match('/name="_wpnonce" value="([^"]+)"/', $checkout, $nonce), "No checkout form.\n" . $checkout);
+            $this->assertSame(1, preg_match('/name="shop_page" value="(\d+)"/', $checkout, $page));
+
+            $form = [
+                'ninja_shows_action' => 'checkout',
+                '_wpnonce' => $nonce[1],
+                'shop_page' => $page[1],
+                'ninja_show_id' => $showId,
+                'name' => 'Ada Lovelace',
+                'email' => 'ada@example.com',
+                'quantity' => '2',
+                'card_number' => '4242 4242 4242 4242',
+                'expiry_month' => '12',
+                'expiry_year' => (string) ((int) gmdate('Y') + 3),
+                'cvc' => '123',
+            ];
+
+            [$status, $headers] = $this->request($port, '/?pagename=shows', $form);
+            $this->assertStringStartsWith('HTTP/1.1 303', $status, "The approved purchase did not redirect.\n" . $headers . "\nLog:\n" . $this->readLog());
+            $this->assertSame(1, preg_match('/^Location:\s*(\S+)/mi', $headers, $location), $headers);
+            $confirmation = (string) parse_url(trim($location[1]), PHP_URL_QUERY);
+            [, , $confirmationPage] = $this->request($port, '/?' . $confirmation);
+            $this->assertStringContainsString('Thank you, Ada Lovelace!', $confirmationPage);
+            $this->assertStringContainsString('$90.00', $confirmationPage);
+
+            $declined = $form;
+            $declined['card_number'] = '4000 0000 0000 0002';
+            [, $headers] = $this->request($port, '/?pagename=shows', $declined);
+            $this->assertSame(1, preg_match('/^Location:\s*(\S+)/mi', $headers, $notice), $headers);
+            $noticeQuery = (string) parse_url(trim($notice[1]), PHP_URL_QUERY);
+            [, , $retry] = $this->request($port, '/?' . $noticeQuery);
+            preg_match_all('/ninja-field-error">([^<]+)/', $retry, $fieldErrors);
+            $this->assertSame([], $fieldErrors[1], 'Checkout rejected the declined purchase before the gateway ran.');
+            $this->assertStringContainsString('Payment was declined. The card was declined.', $retry);
+            $this->assertStringContainsString('value="Ada Lovelace"', $retry);
+        } finally {
+            proc_terminate($process);
+            proc_close($process);
+        }
+    }
+
+    /**
+     * Sends one request to the preview without following redirects.
+     *
+     * @param array<string, string>|null $form Form fields to POST, or null for a GET.
+     * @return array{0: string, 1: string, 2: string} The status line, the response headers and the body.
+     */
+    private function request(int $port, string $path, ?array $form = null): array
+    {
+        $http = ['timeout' => 10, 'ignore_errors' => true, 'follow_location' => 0];
+        if ($form !== null) {
+            $http['method'] = 'POST';
+            $http['header'] = "Content-Type: application/x-www-form-urlencoded\r\n";
+            $http['content'] = http_build_query($form);
+        }
+
+        $body = @file_get_contents('http://127.0.0.1:' . $port . $path, false, stream_context_create(['http' => $http]));
+        if ($body === false) {
+            self::fail("The preview did not answer $path.\n" . $this->readLog());
+        }
+
+        $responseHeaders = $http_response_header ?? [];
+
+        return [$responseHeaders[0] ?? '', implode("\n", $responseHeaders), $body];
+    }
+
     /**
      * Starts preview/start.sh with the settings NinjaBots would give it.
      *
