@@ -1,0 +1,29 @@
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    color: #222;
+    background: #fafafa;
+}
+
+.site-header,
+.site-footer {
+    background: #222;
+    color: #fff;
+    padding: 1rem 2rem;
+}
+
+.site-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.content {
+    max-width: 40rem;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.site-footer p {
+    margin: 0;
+}
