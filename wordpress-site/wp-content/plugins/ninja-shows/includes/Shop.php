@@ -1,12 +1,12 @@
 <?php
 /**
- * The shop front end: the [ninja_shows] shortcode, the checkout form and the
+ * The shoe shop front end: the [ninja_shoes] shortcode, the checkout form and the
  * order confirmation.
  *
- * One page holds the whole shop. ?ninja_show=ID opens checkout for a show, and
- * ?ninja_order=KEY shows the confirmation. The checkout form posts back to that
- * page. handleCheckout() takes the payment in template_redirect, before the page
- * is printed, then redirects, so a reload does not pay twice.
+ * One page holds the whole shop. ?ninja_shoe=ID opens checkout for a shoe listing
+ * (one size), and ?ninja_order=KEY shows the confirmation. The checkout form posts
+ * back to that page. handleCheckout() takes the payment in template_redirect, before
+ * the page is printed, then redirects, so a reload does not pay twice.
  *
  * @package NinjaShows
  */
@@ -22,12 +22,15 @@ use WP_Query;
 
 final class Shop
 {
-    public const SHORTCODE = 'ninja_shows';
+    public const SHORTCODE = 'ninja_shoes';
+
+    /** Query argument that opens checkout for one shoe listing. */
+    private const SHOE_QUERY_ARG = 'ninja_shoe';
 
     /** Hidden field that marks a checkout post. */
-    private const ACTION_FIELD = 'ninja_shows_action';
-    private const NONCE_ACTION = 'ninja_shows_checkout';
-    private const NOTICE_PREFIX = 'ninja_shows_notice_';
+    private const ACTION_FIELD = 'ninja_shoes_action';
+    private const NONCE_ACTION = 'ninja_shoes_checkout';
+    private const NOTICE_PREFIX = 'ninja_shoes_notice_';
     private const NOTICE_SECONDS = 300;
     private const NOTICE_TOKEN_PATTERN = '/^[A-Za-z0-9]{16}$/';
     private const ORDER_KEY_LENGTH = 24;
@@ -35,7 +38,7 @@ final class Shop
     /** Fields the checkout form posts. Anything else is ignored. */
     private const FORM_FIELDS = [
         'name', 'email', 'quantity', 'card_number', 'expiry_month', 'expiry_year', 'cvc',
-        'ninja_show_id', 'shop_page', '_wpnonce',
+        'ninja_shoe_id', 'shop_page', '_wpnonce',
     ];
 
     public static function register(): void
@@ -44,7 +47,7 @@ final class Shop
         add_action('template_redirect', [self::class, 'handleCheckout']);
     }
 
-    /** Shortcode output: the show list, the checkout form, or an order confirmation. */
+    /** Shortcode output: the shoe list, the checkout form, or an order confirmation. */
     public static function render(): string
     {
         $pageId = (int) get_the_ID();
@@ -58,9 +61,9 @@ final class Shop
             return self::renderConfirmation($orderKey, $pageUrl);
         }
 
-        $showId = absint(self::queryText('ninja_show'));
-        if ($showId > 0) {
-            return self::renderCheckout($showId, $pageId, $pageUrl);
+        $shoeId = absint(self::queryText(self::SHOE_QUERY_ARG));
+        if ($shoeId > 0) {
+            return self::renderCheckout($shoeId, $pageId, $pageUrl);
         }
 
         return self::renderList($pageUrl);
@@ -87,25 +90,25 @@ final class Shop
             wp_die(esc_html__('This form has expired. Go back, reload the page and try again.', 'ninja-shows'), '', ['response' => 403]);
         }
 
-        $showId = absint($input['ninja_show_id'] ?? '');
-        $checkoutUrl = add_query_arg('ninja_show', $showId, $pageUrl);
-        $post = self::publishedShow($showId);
+        $shoeId = absint($input['ninja_shoe_id'] ?? '');
+        $checkoutUrl = add_query_arg(self::SHOE_QUERY_ARG, $shoeId, $pageUrl);
+        $post = self::publishedShoe($shoeId);
         if ($post === null) {
             self::redirect($pageUrl);
         }
 
-        $show = self::showData($post);
-        $result = Checkout::validate($input, $show['tickets'], new DateTimeImmutable('now', wp_timezone()));
+        $shoe = self::shoeData($post);
+        $result = Checkout::validate($input, $shoe['stock'], new DateTimeImmutable('now', wp_timezone()));
         if ($result['order'] === null) {
             self::redirectWithNotice($checkoutUrl, '', $result['errors'], $input);
         }
         $order = $result['order'];
 
-        if ($show['price_cents'] <= 0) {
-            self::redirectWithNotice($checkoutUrl, 'Tickets for this show are not on sale yet.', [], $input);
+        if ($shoe['price_cents'] <= 0) {
+            self::redirectWithNotice($checkoutUrl, 'This shoe is not on sale yet.', [], $input);
         }
 
-        $totalCents = $show['price_cents'] * $order['quantity'];
+        $totalCents = $shoe['price_cents'] * $order['quantity'];
         $reference = 'NS-' . strtoupper(wp_generate_password(8, false));
         $payment = self::gateway()->charge(new PaymentRequest(
             $totalCents,
@@ -122,7 +125,7 @@ final class Shop
         }
 
         $orderKey = wp_generate_password(self::ORDER_KEY_LENGTH, false);
-        $saved = self::saveOrder($show, $order, $totalCents, $reference, $orderKey, $payment->transactionId);
+        $saved = self::saveOrder($shoe, $order, $totalCents, $reference, $orderKey, $payment->transactionId);
         if (!$saved) {
             // The charge went through but the order could not be saved. A real gateway
             // would need a refund or void here. The mock has nothing to refund.
@@ -140,35 +143,35 @@ final class Shop
         return $gateway instanceof PaymentGateway ? $gateway : new MockGateway();
     }
 
-    /** @return array{id: int, title: string, price_cents: int, date: string, venue: string, tickets: int} */
-    public static function showData(WP_Post $post): array
+    /** @return array{id: int, title: string, price_cents: int, size: string, colour: string, stock: int} */
+    public static function shoeData(WP_Post $post): array
     {
         return [
             'id' => (int) $post->ID,
             'title' => get_the_title($post),
             'price_cents' => (int) get_post_meta($post->ID, PostTypes::META_PRICE, true),
-            'date' => (string) get_post_meta($post->ID, PostTypes::META_DATE, true),
-            'venue' => (string) get_post_meta($post->ID, PostTypes::META_VENUE, true),
-            'tickets' => (int) get_post_meta($post->ID, PostTypes::META_TICKETS, true),
+            'size' => (string) get_post_meta($post->ID, PostTypes::META_SIZE, true),
+            'colour' => (string) get_post_meta($post->ID, PostTypes::META_COLOUR, true),
+            'stock' => (int) get_post_meta($post->ID, PostTypes::META_STOCK, true),
         ];
     }
 
     private static function renderList(string $pageUrl): string
     {
-        $shows = self::upcomingShows();
+        $shoes = self::shoeList();
 
-        $html = '<div class="ninja-shows">';
-        if ($shows === []) {
-            $html .= '<p>No shows are on sale yet.</p>';
+        $html = '<div class="ninja-shoes">';
+        if ($shoes === []) {
+            $html .= '<p>No shoes are on sale yet.</p>';
         }
-        foreach ($shows as $show) {
-            $html .= '<article class="ninja-show">';
-            $html .= '<h2>' . esc_html($show['title']) . '</h2>';
-            $html .= '<p class="ninja-show-meta">' . esc_html(self::meta($show)) . '</p>';
-            $html .= '<p class="ninja-show-price">' . esc_html(self::priceText($show)) . '</p>';
-            $html .= '<p class="ninja-show-stock">' . esc_html(self::stockText($show)) . '</p>';
-            if (self::canBuy($show)) {
-                $html .= '<a class="ninja-button" href="' . esc_url(add_query_arg('ninja_show', $show['id'], $pageUrl)) . '">Buy tickets</a>';
+        foreach ($shoes as $shoe) {
+            $html .= '<article class="ninja-shoe">';
+            $html .= '<h2>' . esc_html($shoe['title']) . '</h2>';
+            $html .= '<p class="ninja-shoe-meta">' . esc_html(self::meta($shoe)) . '</p>';
+            $html .= '<p class="ninja-shoe-price">' . esc_html(self::priceText($shoe)) . '</p>';
+            $html .= '<p class="ninja-shoe-stock">' . esc_html(self::stockText($shoe)) . '</p>';
+            if (self::canBuy($shoe)) {
+                $html .= '<a class="ninja-button" href="' . esc_url(add_query_arg(self::SHOE_QUERY_ARG, $shoe['id'], $pageUrl)) . '">Buy now</a>';
             }
             $html .= '</article>';
         }
@@ -176,21 +179,21 @@ final class Shop
         return $html . '</div>';
     }
 
-    private static function renderCheckout(int $showId, int $pageId, string $pageUrl): string
+    private static function renderCheckout(int $shoeId, int $pageId, string $pageUrl): string
     {
-        $post = self::publishedShow($showId);
+        $post = self::publishedShoe($shoeId);
         if ($post === null) {
-            return '<p>This show is not available.</p>' . self::backLink($pageUrl);
+            return '<p>This shoe is not available.</p>' . self::backLink($pageUrl);
         }
 
-        $show = self::showData($post);
+        $shoe = self::shoeData($post);
         $html = '<div class="ninja-checkout">';
-        $html .= '<h2>' . esc_html($show['title']) . '</h2>';
-        $html .= '<p class="ninja-show-meta">' . esc_html(self::meta($show)) . '</p>';
-        $html .= '<p class="ninja-show-price">' . esc_html(self::priceText($show)) . ' per ticket</p>';
+        $html .= '<h2>' . esc_html($shoe['title']) . '</h2>';
+        $html .= '<p class="ninja-shoe-meta">' . esc_html(self::meta($shoe)) . '</p>';
+        $html .= '<p class="ninja-shoe-price">' . esc_html(self::priceText($shoe)) . ' per pair</p>';
 
-        if (!self::canBuy($show)) {
-            return $html . '<p>' . esc_html(self::stockText($show)) . '</p>' . self::backLink($pageUrl) . '</div>';
+        if (!self::canBuy($shoe)) {
+            return $html . '<p>' . esc_html(self::stockText($shoe)) . '</p>' . self::backLink($pageUrl) . '</div>';
         }
 
         $notice = self::takeNotice();
@@ -206,24 +209,24 @@ final class Shop
         $html .= '<p class="ninja-mock-note">Mock payment: no real money is charged. Test card 4242 4242 4242 4242 is approved. '
             . 'Card 4000 0000 0000 0002 is declined. Use any future expiry date and any 3-digit security code.</p>';
 
-        $maxTickets = min(Checkout::MAX_TICKETS_PER_ORDER, $show['tickets']);
+        $maxPairs = min(Checkout::MAX_TICKETS_PER_ORDER, $shoe['stock']);
         $quantity = (string) ($values['quantity'] ?? '1');
 
         $html .= '<form method="post" action="' . esc_url($pageUrl) . '" class="ninja-checkout-form" novalidate>';
         $html .= wp_nonce_field(self::NONCE_ACTION, '_wpnonce', false, false);
         $html .= '<input type="hidden" name="' . esc_attr(self::ACTION_FIELD) . '" value="checkout">';
-        $html .= '<input type="hidden" name="ninja_show_id" value="' . esc_attr((string) $show['id']) . '">';
+        $html .= '<input type="hidden" name="ninja_shoe_id" value="' . esc_attr((string) $shoe['id']) . '">';
         $html .= '<input type="hidden" name="shop_page" value="' . esc_attr((string) $pageId) . '">';
 
         $html .= self::field('name', 'Full name', 'text', (string) ($values['name'] ?? ''), $errors, 'autocomplete="name"');
         $html .= self::field('email', 'Email', 'email', (string) ($values['email'] ?? ''), $errors, 'autocomplete="email"');
-        $html .= self::field('quantity', 'Tickets (up to ' . $maxTickets . ')', 'number', $quantity, $errors, 'min="1" max="' . $maxTickets . '" step="1"');
+        $html .= self::field('quantity', 'Pairs (up to ' . $maxPairs . ')', 'number', $quantity, $errors, 'min="1" max="' . $maxPairs . '" step="1"');
         $html .= self::field('card_number', 'Card number', 'text', '', $errors, 'inputmode="numeric" autocomplete="cc-number"');
         $html .= self::field('expiry_month', 'Expiry month (MM)', 'text', '', $errors, 'inputmode="numeric" autocomplete="cc-exp-month" maxlength="2"');
         $html .= self::field('expiry_year', 'Expiry year (YY or YYYY)', 'text', '', $errors, 'inputmode="numeric" autocomplete="cc-exp-year" maxlength="4"', 'expiry');
         $html .= self::field('cvc', 'Security code', 'text', '', $errors, 'inputmode="numeric" autocomplete="cc-csc" maxlength="4"');
 
-        $html .= '<p><button type="submit" class="ninja-button">Pay ' . esc_html(Money::format($show['price_cents'])) . ' per ticket</button></p>';
+        $html .= '<p><button type="submit" class="ninja-button">Pay ' . esc_html(Money::format($shoe['price_cents'])) . ' per pair</button></p>';
         $html .= '</form>';
 
         return $html . self::backLink($pageUrl) . '</div>';
@@ -245,13 +248,14 @@ final class Shop
         }
 
         $orderId = (int) $ids[0];
-        $showId = (int) get_post_meta($orderId, PostTypes::META_ORDER_SHOW, true);
-        $showTitle = $showId > 0 ? get_the_title($showId) : '';
+        $shoeId = (int) get_post_meta($orderId, PostTypes::META_ORDER_SHOE, true);
+        $shoeTitle = $shoeId > 0 ? get_the_title($shoeId) : '';
 
         $rows = [
             'Reference' => (string) get_post_meta($orderId, PostTypes::META_ORDER_REFERENCE, true),
-            'Show' => $showTitle !== '' ? $showTitle : 'Show',
-            'Tickets' => (string) (int) get_post_meta($orderId, PostTypes::META_ORDER_QUANTITY, true),
+            'Shoe' => $shoeTitle !== '' ? $shoeTitle : 'Shoe',
+            'Size' => (string) get_post_meta($orderId, PostTypes::META_ORDER_SIZE, true),
+            'Pairs' => (string) (int) get_post_meta($orderId, PostTypes::META_ORDER_QUANTITY, true),
             'Total' => Money::format((int) get_post_meta($orderId, PostTypes::META_ORDER_TOTAL, true)),
             'Card' => 'ending ' . (string) get_post_meta($orderId, PostTypes::META_ORDER_CARD_LAST4, true),
             'Mock transaction' => (string) get_post_meta($orderId, PostTypes::META_ORDER_TRANSACTION, true),
@@ -263,6 +267,9 @@ final class Shop
         $html .= '<p>Your order is confirmed. This is a mock payment, so no money moved.</p>';
         $html .= '<dl>';
         foreach ($rows as $label => $value) {
+            if ($value === '') {
+                continue;
+            }
             $html .= '<dt>' . esc_html($label) . '</dt><dd>' . esc_html($value) . '</dd>';
         }
         $html .= '</dl>';
@@ -271,14 +278,14 @@ final class Shop
     }
 
     /**
-     * Shows that are published and have a date, soonest first. Shows without a date come last.
+     * Published shoe listings, in the order they were added. Each size is its own listing.
      *
-     * @return array<int, array{id: int, title: string, price_cents: int, date: string, venue: string, tickets: int}>
+     * @return array<int, array{id: int, title: string, price_cents: int, size: string, colour: string, stock: int}>
      */
-    private static function upcomingShows(): array
+    private static function shoeList(): array
     {
         $query = new WP_Query([
-            'post_type' => PostTypes::SHOW,
+            'post_type' => PostTypes::SHOE,
             'post_status' => 'publish',
             'posts_per_page' => 100,
             'no_found_rows' => true,
@@ -286,23 +293,20 @@ final class Shop
             'order' => 'ASC',
         ]);
 
-        $shows = array_map([self::class, 'showData'], $query->posts);
-        usort($shows, static fn (array $a, array $b): int => strcmp($a['date'] !== '' ? $a['date'] : '~', $b['date'] !== '' ? $b['date'] : '~'));
-
-        return $shows;
+        return array_map([self::class, 'shoeData'], $query->posts);
     }
 
-    private static function publishedShow(int $showId): ?WP_Post
+    private static function publishedShoe(int $shoeId): ?WP_Post
     {
-        $post = $showId > 0 ? get_post($showId) : null;
-        if (!$post instanceof WP_Post || $post->post_type !== PostTypes::SHOW || $post->post_status !== 'publish') {
+        $post = $shoeId > 0 ? get_post($shoeId) : null;
+        if (!$post instanceof WP_Post || $post->post_type !== PostTypes::SHOE || $post->post_status !== 'publish') {
             return null;
         }
 
         return $post;
     }
 
-    /** The shop page's address, or '' when the page is not published or has no [ninja_shows] shortcode. */
+    /** The shop page's address, or '' when the page is not published or has no [ninja_shoes] shortcode. */
     private static function shopPageUrl(int $pageId): string
     {
         $page = $pageId > 0 ? get_post($pageId) : null;
@@ -316,37 +320,40 @@ final class Shop
         return (string) get_permalink($page);
     }
 
-    private static function canBuy(array $show): bool
+    private static function canBuy(array $shoe): bool
     {
-        return $show['price_cents'] > 0 && $show['tickets'] > 0;
+        return $shoe['price_cents'] > 0 && $shoe['stock'] > 0;
     }
 
-    private static function stockText(array $show): string
+    private static function stockText(array $shoe): string
     {
-        if ($show['price_cents'] <= 0) {
+        if ($shoe['price_cents'] <= 0) {
             return 'Not on sale yet';
         }
-        if ($show['tickets'] < 1) {
+        if ($shoe['stock'] < 1) {
             return 'Sold out';
         }
 
-        return $show['tickets'] === 1 ? '1 ticket left' : $show['tickets'] . ' tickets left';
+        return $shoe['stock'] === 1 ? '1 pair left' : $shoe['stock'] . ' pairs left';
     }
 
-    private static function priceText(array $show): string
+    private static function priceText(array $shoe): string
     {
-        return $show['price_cents'] > 0 ? Money::format($show['price_cents']) : 'Price not set';
+        return $shoe['price_cents'] > 0 ? Money::format($shoe['price_cents']) : 'Price not set';
     }
 
-    /** "Sun 1 Jun 2025, 7:30 pm at Riverside Theatre", without the parts that are missing. */
-    private static function meta(array $show): string
+    /** "Size US 9, Black". The parts that are missing are left out. */
+    private static function meta(array $shoe): string
     {
-        $date = ShowFields::formatForDisplay($show['date']);
-        if ($date === '') {
-            return $show['venue'];
+        $parts = [];
+        if ($shoe['size'] !== '') {
+            $parts[] = 'Size ' . $shoe['size'];
+        }
+        if ($shoe['colour'] !== '') {
+            $parts[] = $shoe['colour'];
         }
 
-        return $show['venue'] !== '' ? $date . ' at ' . $show['venue'] : $date;
+        return implode(', ', $parts);
     }
 
     /** One labelled form field, with its error below it when there is one. */
@@ -364,16 +371,16 @@ final class Shop
 
     private static function backLink(string $pageUrl): string
     {
-        return '<p><a href="' . esc_url($pageUrl) . '">Back to all shows</a></p>';
+        return '<p><a href="' . esc_url($pageUrl) . '">Back to all shoes</a></p>';
     }
 
     /**
-     * Saves the paid order. Returns false if WordPress could not save it.
+     * Saves the paid order and takes the pairs out of stock. Returns false if WordPress could not save the order.
      *
-     * @param array{id: int, title: string} $show
-     * @param array<string, mixed>          $order
+     * @param array{id: int, title: string, size: string, stock: int} $shoe
+     * @param array<string, mixed>                                   $order
      */
-    private static function saveOrder(array $show, array $order, int $totalCents, string $reference, string $orderKey, string $transactionId): bool
+    private static function saveOrder(array $shoe, array $order, int $totalCents, string $reference, string $orderKey, string $transactionId): bool
     {
         $orderId = wp_insert_post([
             'post_type' => PostTypes::ORDER,
@@ -387,7 +394,8 @@ final class Shop
         $meta = [
             PostTypes::META_ORDER_KEY => $orderKey,
             PostTypes::META_ORDER_REFERENCE => $reference,
-            PostTypes::META_ORDER_SHOW => $show['id'],
+            PostTypes::META_ORDER_SHOE => $shoe['id'],
+            PostTypes::META_ORDER_SIZE => $shoe['size'],
             PostTypes::META_ORDER_QUANTITY => $order['quantity'],
             PostTypes::META_ORDER_TOTAL => $totalCents,
             PostTypes::META_ORDER_NAME => $order['name'],
@@ -400,9 +408,9 @@ final class Shop
             update_post_meta($orderId, $key, $value);
         }
 
-        // Take the tickets out of stock. Two buyers at the same moment could both get the last ticket;
-        // a real store would lock the show row or use a database transaction here.
-        update_post_meta($show['id'], PostTypes::META_TICKETS, max(0, $show['tickets'] - $order['quantity']));
+        // Take the pairs out of stock. Two buyers at the same moment could both get the last pair;
+        // a real store would lock the stock row or use a database transaction here.
+        update_post_meta($shoe['id'], PostTypes::META_STOCK, max(0, $shoe['stock'] - $order['quantity']));
 
         return true;
     }

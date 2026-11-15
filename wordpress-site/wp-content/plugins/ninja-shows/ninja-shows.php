@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Ninja Shows
- * Description: Sells show tickets with a mock payment gateway. Adds the [ninja_shows] shortcode.
+ * Plugin Name: Ninja Shoes
+ * Description: Sells shoes with a mock payment gateway. Adds the [ninja_shoes] shortcode.
  * Version:     1.0.0
  * Requires PHP: 8.1
  * License:     GPL-2.0-or-later
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 $ninja_shows_includes = __DIR__ . '/includes';
 require_once $ninja_shows_includes . '/Money.php';
 require_once $ninja_shows_includes . '/CardValidator.php';
-require_once $ninja_shows_includes . '/ShowFields.php';
+require_once $ninja_shows_includes . '/ShoeFields.php';
 require_once $ninja_shows_includes . '/Checkout.php';
 require_once $ninja_shows_includes . '/Payments/PaymentRequest.php';
 require_once $ninja_shows_includes . '/Payments/PaymentResult.php';

@@ -11,7 +11,7 @@ foreach (
     [
         'Money.php',
         'CardValidator.php',
-        'ShowFields.php',
+        'ShoeFields.php',
         'Checkout.php',
         'Payments/PaymentRequest.php',
         'Payments/PaymentResult.php',

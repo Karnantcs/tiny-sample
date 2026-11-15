@@ -114,26 +114,28 @@ final class PreviewSiteTest extends TestCase
         $this->assertStringNotContainsString('installing WordPress', $output);
     }
 
-    public function testShopListsSampleShowsAndSoldOutStock(): void
+    public function testShopListsSampleShoesAndSoldOutStock(): void
     {
         $port = $this->freePort();
         $process = $this->startPreview($port);
 
         try {
             $this->waitForPage($process, $port);
-            [$status, , $body] = $this->request($port, '/?pagename=shows');
+            [$status, , $body] = $this->request($port, '/?pagename=shoes');
         } finally {
             proc_terminate($process);
             proc_close($process);
         }
 
-        $this->assertStringStartsWith('HTTP/1.1 200', $status, "The Shows page did not load.\nLog:\n" . $this->readLog());
-        $this->assertStringContainsString('The Midnight Orchestra', $body);
+        $this->assertStringStartsWith('HTTP/1.1 200', $status, "The Shoes page did not load.\nLog:\n" . $this->readLog());
+        $this->assertStringContainsString('Trail Runner', $body);
+        $this->assertStringContainsString('Size US 9', $body);
+        $this->assertStringContainsString('Canvas Low Top', $body);
         $this->assertStringContainsString('Sold out', $body);
-        $this->assertStringContainsString('$45.00', $body);
+        $this->assertStringContainsString('$89.00', $body);
     }
 
-    public function testMockPaymentApprovesAndDeclinesTicketPurchases(): void
+    public function testMockPaymentApprovesAndDeclinesShoePurchases(): void
     {
         $port = $this->freePort();
         $process = $this->startPreview($port);
@@ -141,19 +143,19 @@ final class PreviewSiteTest extends TestCase
         try {
             $this->waitForPage($process, $port);
 
-            [, , $list] = $this->request($port, '/?pagename=shows');
-            $this->assertSame(1, preg_match('/ninja_show=(\d+)/', $list, $showMatch), "No show is on sale.\n" . $list);
-            $showId = $showMatch[1];
+            [, , $list] = $this->request($port, '/?pagename=shoes');
+            $this->assertSame(1, preg_match('/ninja_shoe=(\d+)/', $list, $shoeMatch), "No shoe is on sale.\n" . $list);
+            $shoeId = $shoeMatch[1];
 
-            [, , $checkout] = $this->request($port, '/?pagename=shows&ninja_show=' . $showId);
+            [, , $checkout] = $this->request($port, '/?pagename=shoes&ninja_shoe=' . $shoeId);
             $this->assertSame(1, preg_match('/name="_wpnonce" value="([^"]+)"/', $checkout, $nonce), "No checkout form.\n" . $checkout);
             $this->assertSame(1, preg_match('/name="shop_page" value="(\d+)"/', $checkout, $page));
 
             $form = [
-                'ninja_shows_action' => 'checkout',
+                'ninja_shoes_action' => 'checkout',
                 '_wpnonce' => $nonce[1],
                 'shop_page' => $page[1],
-                'ninja_show_id' => $showId,
+                'ninja_shoe_id' => $shoeId,
                 'name' => 'Ada Lovelace',
                 'email' => 'ada@example.com',
                 'quantity' => '2',
@@ -169,7 +171,8 @@ final class PreviewSiteTest extends TestCase
             $confirmation = (string) parse_url(trim($location[1]), PHP_URL_QUERY);
             [, , $confirmationPage] = $this->request($port, '/?' . $confirmation);
             $this->assertStringContainsString('Thank you, Ada Lovelace!', $confirmationPage);
-            $this->assertStringContainsString('$90.00', $confirmationPage);
+            $this->assertStringContainsString('$178.00', $confirmationPage);
+            $this->assertStringContainsString('US 9', $confirmationPage);
 
             $declined = $form;
             $declined['card_number'] = '4000 0000 0000 0002';

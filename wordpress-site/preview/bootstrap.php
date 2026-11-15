@@ -60,10 +60,10 @@ if (is_wp_error($plugin)) {
     exit(1);
 }
 
-// Activating ninja-shows creates the Shows page and sample shows (see NinjaShows\Setup).
+// Activating ninja-shows creates the Shoes page and sample shoes (see NinjaShows\Setup).
 $shows = activate_plugin('ninja-shows/ninja-shows.php');
 if (is_wp_error($shows)) {
-    fwrite(STDERR, 'preview: could not activate ninja-shows: ' . $shows->get_error_message() . "\n");
+    fwrite(STDERR, 'preview: could not activate ninja-shows (the shoe shop): ' . $shows->get_error_message() . "\n");
     exit(1);
 }
 

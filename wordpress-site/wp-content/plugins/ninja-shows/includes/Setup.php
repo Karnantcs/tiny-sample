@@ -1,23 +1,21 @@
 <?php
 /**
- * Runs when the plugin is activated: creates the Shows page and, on an empty
- * site, a few sample shows so the shop has something to sell.
+ * Runs when the plugin is activated: creates the Shoes page and, on an empty
+ * site, a few sample shoes so the shop has something to sell.
  *
  * @package NinjaShows
  */
 
 namespace NinjaShows;
 
-use DateTimeImmutable;
-
 final class Setup
 {
-    public const SHOP_SLUG = 'shows';
+    public const SHOP_SLUG = 'shoes';
 
     public static function activate(): void
     {
         self::ensureShopPage();
-        self::ensureSampleShows();
+        self::ensureSampleShoes();
     }
 
     private static function ensureShopPage(): void
@@ -28,18 +26,18 @@ final class Setup
 
         wp_insert_post([
             'post_type' => 'page',
-            'post_title' => 'Shows',
+            'post_title' => 'Shoes',
             'post_name' => self::SHOP_SLUG,
             'post_status' => 'publish',
             'post_content' => '[' . Shop::SHORTCODE . ']',
         ]);
     }
 
-    /** Adds sample shows only when there are no shows yet. Their details are fake. */
-    private static function ensureSampleShows(): void
+    /** Adds sample shoes only when there are no shoes yet. Their details are fake. */
+    private static function ensureSampleShoes(): void
     {
         $existing = get_posts([
-            'post_type' => PostTypes::SHOW,
+            'post_type' => PostTypes::SHOE,
             'post_status' => 'any',
             'posts_per_page' => 1,
             'fields' => 'ids',
@@ -49,30 +47,29 @@ final class Setup
             return;
         }
 
-        $now = new DateTimeImmutable('now', wp_timezone());
         $samples = [
-            // [title, days from now, time, venue, price in cents, tickets]
-            ['The Midnight Orchestra', 14, '19:30', 'Riverside Theatre', 4500, 40],
-            ['Comedy Night Live', 21, '20:00', 'The Corner Club', 2500, 60],
-            ['Spring Ballet Gala', 30, '18:00', 'Grand Opera House', 8000, 0],
+            // [model, size, colour, price in cents, pairs in stock]
+            ['Trail Runner', 'US 9', 'Black', 8900, 12],
+            ['Trail Runner', 'US 10', 'Black', 8900, 6],
+            ['Classic Leather Oxford', 'US 10', 'Brown', 12000, 5],
+            ['Canvas Low Top', 'US 8', 'White', 4500, 0],
         ];
 
-        foreach ($samples as [$title, $days, $time, $venue, $priceCents, $tickets]) {
-            $showId = wp_insert_post([
-                'post_type' => PostTypes::SHOW,
+        foreach ($samples as [$model, $size, $colour, $priceCents, $stock]) {
+            $shoeId = wp_insert_post([
+                'post_type' => PostTypes::SHOE,
                 'post_status' => 'publish',
-                'post_title' => $title,
-                'post_content' => 'Sample show added when the plugin was activated. Edit or delete it under Shows.',
+                'post_title' => $model,
+                'post_content' => 'Sample shoe added when the plugin was activated. Edit or delete it under Shoes.',
             ], true);
-            if (is_wp_error($showId)) {
+            if (is_wp_error($shoeId)) {
                 continue;
             }
 
-            $date = $now->modify('+' . $days . ' days')->format('Y-m-d') . 'T' . $time;
-            update_post_meta($showId, PostTypes::META_PRICE, $priceCents);
-            update_post_meta($showId, PostTypes::META_DATE, $date);
-            update_post_meta($showId, PostTypes::META_VENUE, $venue);
-            update_post_meta($showId, PostTypes::META_TICKETS, $tickets);
+            update_post_meta($shoeId, PostTypes::META_PRICE, $priceCents);
+            update_post_meta($shoeId, PostTypes::META_SIZE, $size);
+            update_post_meta($shoeId, PostTypes::META_COLOUR, $colour);
+            update_post_meta($shoeId, PostTypes::META_STOCK, $stock);
         }
     }
 }

@@ -90,14 +90,14 @@ final class CheckoutTest extends TestCase
     {
         $result = Checkout::validate($this->validInput(['quantity' => '4']), 3, $this->now);
 
-        $this->assertSame('Choose between 1 and 3 tickets.', $result['errors']['quantity']);
+        $this->assertSame('Choose between 1 and 3 pairs.', $result['errors']['quantity']);
     }
 
-    public function testSoldOutShowIsReported(): void
+    public function testSoldOutShoeIsReported(): void
     {
         $result = Checkout::validate($this->validInput(), 0, $this->now);
 
-        $this->assertSame('This show is sold out.', $result['errors']['quantity']);
+        $this->assertSame('This shoe is sold out.', $result['errors']['quantity']);
     }
 
     public function testLuhnInvalidCardIsReported(): void

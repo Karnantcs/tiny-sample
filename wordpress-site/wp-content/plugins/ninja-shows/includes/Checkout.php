@@ -1,6 +1,6 @@
 <?php
 /**
- * Validation of the checkout form. It checks the customer, ticket count and card
+ * Validation of the checkout form. It checks the customer, pair count and card
  * fields, and returns the clean order data for the payment gateway.
  *
  * Kept free of WordPress functions so it can be unit tested without WordPress.
@@ -14,7 +14,7 @@ use DateTimeImmutable;
 
 final class Checkout
 {
-    /** Most tickets one order can buy. */
+    /** Most pairs one order can buy. */
     public const MAX_TICKETS_PER_ORDER = 10;
 
     /** Longest accepted name, in bytes. */
@@ -27,11 +27,11 @@ final class Checkout
      * Validate the submitted fields.
      *
      * @param array<string, mixed> $input Form values: name, email, quantity, card_number, expiry_month, expiry_year, cvc.
-     * @param int                  $ticketsAvailable Tickets left for the show.
+     * @param int                  $stockAvailable Pairs left for the shoe in this size.
      * @return array{errors: array<string, string>, order: array<string, mixed>|null}
      *         errors is keyed by field. order is set only when there are no errors.
      */
-    public static function validate(array $input, int $ticketsAvailable, DateTimeImmutable $now): array
+    public static function validate(array $input, int $stockAvailable, DateTimeImmutable $now): array
     {
         $errors = [];
 
@@ -45,13 +45,13 @@ final class Checkout
             $errors['email'] = 'Enter a valid email address.';
         }
 
-        $maxTickets = min(self::MAX_TICKETS_PER_ORDER, max(0, $ticketsAvailable));
+        $maxPairs = min(self::MAX_TICKETS_PER_ORDER, max(0, $stockAvailable));
         $quantityText = self::text($input, 'quantity');
         $quantity = preg_match('/^\d{1,3}$/', $quantityText) ? (int) $quantityText : 0;
-        if ($maxTickets < 1) {
-            $errors['quantity'] = 'This show is sold out.';
-        } elseif ($quantity < 1 || $quantity > $maxTickets) {
-            $errors['quantity'] = sprintf('Choose between 1 and %d tickets.', $maxTickets);
+        if ($maxPairs < 1) {
+            $errors['quantity'] = 'This shoe is sold out.';
+        } elseif ($quantity < 1 || $quantity > $maxPairs) {
+            $errors['quantity'] = sprintf('Choose between 1 and %d pairs.', $maxPairs);
         }
 
         $number = CardValidator::normalizeNumber(self::text($input, 'card_number'));

@@ -37,7 +37,7 @@ body {
     color: #2271b1;
 }
 
-.ninja-show,
+.ninja-shoe,
 .ninja-checkout,
 .ninja-confirmation {
     background: #fff;
@@ -47,13 +47,13 @@ body {
     margin-bottom: 1.5rem;
 }
 
-.ninja-show-meta,
-.ninja-show-stock,
+.ninja-shoe-meta,
+.ninja-shoe-stock,
 .ninja-mock-note {
     color: #555;
 }
 
-.ninja-show-price {
+.ninja-shoe-price {
     font-weight: bold;
     font-size: 1.1rem;
 }
