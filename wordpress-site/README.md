@@ -20,8 +20,12 @@ wordpress-site/
 │   ├── bootstrap.php       # installs WordPress once, with no wizard
 │   ├── wp-config.php       # SQLite settings used by the preview
 │   └── router.php          # routes pretty permalinks for php -S
+├── static-page/            # a simple standalone static page (not part of WordPress)
+│   ├── index.html          # the page, opens directly in a browser
+│   └── style.css           # its stylesheet
 ├── tests/GreeterTest.php
 ├── tests/PreviewSiteTest.php
+├── tests/StaticPageTest.php  # checks static-page/ (reads files only)
 └── wp-content/
     ├── plugins/ninja-hello/
     │   ├── ninja-hello.php           # plugin file, registers the shortcode
@@ -77,7 +81,11 @@ composer install
 composer test
 ```
 
-`composer test` runs `vendor/bin/phpunit`. `GreeterTest` checks the greeting logic alone. `PreviewSiteTest` starts the preview on a free port with `preview/start.sh`, checks the home page, and checks that a second start doesn't reinstall. It is skipped if `pdo_sqlite` or `proc_open` is missing.
+`composer test` runs `vendor/bin/phpunit`. `GreeterTest` checks the greeting logic alone. `PreviewSiteTest` starts the preview on a free port with `preview/start.sh`, checks the home page, and checks that a second start doesn't reinstall. It is skipped if `pdo_sqlite` or `proc_open` is missing. `StaticPageTest` checks the static page in `static-page/` by reading its files; it needs no server.
+
+## Static page
+
+`static-page/index.html` is a simple standalone page with its own `style.css`. It is not part of the WordPress site: the preview and Docker setup do not serve it. To look at it, open `static-page/index.html` in a browser.
 
 ## Notes
 
