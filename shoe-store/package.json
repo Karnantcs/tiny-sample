@@ -1,0 +1,15 @@
+{
+  "name": "stride-shoe-store",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shoe store with a mock payment gateway. Built on node:http, no dependencies.",
+  "license": "UNLICENSED",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

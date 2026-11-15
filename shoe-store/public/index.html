@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stride &amp; Co. | Shoes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#shop">Stride &amp; Co.</a>
+    <button type="button" class="cart-button" id="cart-button">Cart <span id="cart-count">0</span></button>
+  </header>
+
+  <main>
+    <section id="shop" class="view">
+      <div class="intro">
+        <h1>Shoes for every step</h1>
+        <p>Running, formal, outdoor and casual shoes. Pick a size and add it to your cart.</p>
+      </div>
+      <p class="status" id="catalog-status" role="status">Loading the catalog&hellip;</p>
+      <div class="grid" id="product-grid"></div>
+    </section>
+
+    <section id="cart-view" class="view" hidden>
+      <h2>Your cart</h2>
+      <p class="empty" id="cart-empty" hidden>Your cart is empty. <a href="#shop">Browse the shoes</a>.</p>
+      <ul class="cart-lines" id="cart-lines"></ul>
+      <dl class="totals" id="cart-totals" hidden>
+        <dt>Subtotal</dt><dd id="cart-subtotal">$0.00</dd>
+        <dt>Shipping</dt><dd id="cart-shipping">$0.00</dd>
+        <dt>Total</dt><dd id="cart-total">$0.00</dd>
+      </dl>
+      <p class="hint" id="cart-hint" hidden>Free shipping on orders of $100 or more.</p>
+      <div class="actions">
+        <a class="button secondary" href="#shop">Keep shopping</a>
+        <a class="button" id="go-checkout" href="#checkout">Checkout</a>
+      </div>
+    </section>
+
+    <section id="checkout" class="view" hidden>
+      <h2>Checkout</h2>
+      <div class="checkout-layout">
+        <form id="checkout-form" novalidate>
+          <fieldset>
+            <legend>Shipping</legend>
+            <label>Full name <input name="name" autocomplete="name" required></label>
+            <p class="field-error" data-error="name"></p>
+            <label>Email <input name="email" type="email" autocomplete="email" required></label>
+            <p class="field-error" data-error="email"></p>
+            <label>Address <textarea name="address" rows="2" autocomplete="street-address" required></textarea></label>
+            <p class="field-error" data-error="address"></p>
+          </fieldset>
+
+          <fieldset>
+            <legend>Payment <span class="badge">Test mode</span></legend>
+            <p class="hint">Payments are mocked for now. Use 4242 4242 4242 4242 with any future expiry and any 3-digit code.</p>
+            <label>Card number <input name="number" inputmode="numeric" autocomplete="cc-number" placeholder="4242 4242 4242 4242" required></label>
+            <p class="field-error" data-error="number"></p>
+            <div class="row">
+              <label>Expiry (MM/YY) <input name="expiry" autocomplete="cc-exp" placeholder="12/30" required></label>
+              <label>Security code <input name="cvc" inputmode="numeric" autocomplete="cc-csc" placeholder="123" required></label>
+            </div>
+            <p class="field-error" data-error="expiry"></p>
+            <p class="field-error" data-error="cvc"></p>
+          </fieldset>
+
+          <p class="form-error" id="checkout-error" role="alert" hidden></p>
+          <div class="actions">
+            <a class="button secondary" href="#cart-view">Back to cart</a>
+            <button type="submit" class="button" id="pay-button">Pay now</button>
+          </div>
+        </form>
+
+        <aside class="summary">
+          <h3>Order summary</h3>
+          <ul id="summary-lines"></ul>
+          <dl class="totals">
+            <dt>Subtotal</dt><dd id="summary-subtotal">$0.00</dd>
+            <dt>Shipping</dt><dd id="summary-shipping">$0.00</dd>
+            <dt>Total</dt><dd id="summary-total">$0.00</dd>
+          </dl>
+        </aside>
+      </div>
+    </section>
+
+    <section id="confirmation" class="view" hidden>
+      <h2>Thank you for your order</h2>
+      <p>Your payment was approved and we are preparing your shoes.</p>
+      <dl class="details" id="order-details"></dl>
+      <ul class="cart-lines" id="order-lines"></ul>
+      <div class="actions">
+        <a class="button" href="#shop">Continue shopping</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Demo store. Payments use a mock gateway; no real card is charged.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
