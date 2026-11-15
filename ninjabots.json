@@ -1,6 +1,6 @@
 {
-  "install": "cd wordpress-site && composer install --no-interaction --no-progress",
-  "test": "cd wordpress-site && vendor/bin/phpunit",
-  "build": "cd wordpress-site && php -l wp-content/plugins/ninja-hello/ninja-hello.php && php -l wp-content/plugins/ninja-hello/includes/Greeter.php && php -l wp-content/themes/ninja-theme/functions.php && php -l wp-content/themes/ninja-theme/index.php && php -l preview/bootstrap.php && php -l preview/router.php && php -l preview/wp-config.php && sh -n preview/start.sh && sh -n docker/ninja-bootstrap.sh",
-  "start": "cd wordpress-site && sh preview/start.sh"
+  "install": "cd wordpress-site && composer install --no-interaction --no-progress && cd ../react-page && npm install",
+  "test": "cd wordpress-site && vendor/bin/phpunit && cd ../react-page && npm test",
+  "build": "cd wordpress-site && php -l wp-content/plugins/ninja-hello/ninja-hello.php && php -l wp-content/plugins/ninja-hello/includes/Greeter.php && php -l wp-content/themes/ninja-theme/functions.php && php -l wp-content/themes/ninja-theme/index.php && php -l preview/bootstrap.php && php -l preview/router.php && php -l preview/wp-config.php && sh -n preview/start.sh && sh -n docker/ninja-bootstrap.sh && cd ../react-page && npm run build",
+  "start": "cd react-page && npm run build && npx vite preview --host 0.0.0.0 --port $PORT --strictPort"
 }
