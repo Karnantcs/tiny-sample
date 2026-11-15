@@ -4,7 +4,8 @@ A WordPress site in Docker with:
 
 - **`ninja-theme`**: a minimal custom theme (`wp-content/themes/ninja-theme`).
 - **`ninja-hello`**: a plugin with the shortcode `[ninja_hello name="..."]`, which prints `Hello, <name>!`. With no name, or a blank one, it prints `Hello, world!`.
-- **PHPUnit tests** for the greeting logic. They run without a WordPress install.
+- **`ninja-shows`** (named **Ninja Shoes**): a shoe shop with a **mock payment gateway**. Shoes, prices, sizes, colours and stock are managed in wp-admin. The shop is the `[ninja_shoes]` shortcode, on the **Shoes** page.
+- **PHPUnit tests** for the greeting, money, card, checkout and mock payment logic. They run without a WordPress install.
 
 ## Layout
 
@@ -20,14 +21,32 @@ wordpress-site/
 │   ├── bootstrap.php       # installs WordPress once, with no wizard
 │   ├── wp-config.php       # SQLite settings used by the preview
 │   └── router.php          # routes pretty permalinks for php -S
-├── tests/GreeterTest.php
-├── tests/PreviewSiteTest.php
+├── tests/                      # PHPUnit: Greeter, Money, CardValidator, ShoeFields, Checkout, MockGateway, PreviewSite
 └── wp-content/
     ├── plugins/ninja-hello/
     │   ├── ninja-hello.php           # plugin file, registers the shortcode
     │   └── includes/Greeter.php      # greeting logic (no WordPress calls)
+    ├── plugins/ninja-shows/          # the shoe shop (plugin name: Ninja Shoes)
+    │   ├── ninja-shows.php           # plugin file, loads the classes and hooks
+    │   └── includes/                 # Money, CardValidator, ShoeFields, Checkout (no WordPress calls)
+    │       ├── Payments/             # PaymentGateway interface, MockGateway, request and result
+    │       ├── PostTypes.php         # Shoe and Order post types, admin fields
+    │       ├── Setup.php             # on activation: Shoes page and sample shoes
+    │       └── Shop.php              # [ninja_shoes] shortcode, checkout and confirmation
     └── themes/ninja-theme/           # style.css, index.php, functions.php
 ```
+
+## Shoe shop (ninja-shows)
+
+The shop sells shoes. Payments go through a mock gateway, so no real money moves. When the real gateway is ready, it replaces the mock without changing the checkout.
+
+- **Shoes** are a post type in wp-admin. Each listing is one shoe in one size, with a price (USD, e.g. `89.00`), a size (for example `US 9`, `UK 8.5` or `EU 43`, up to 20 characters), an optional colour, and the number of pairs in stock. Set pairs in stock to 0 to mark a size sold out. To sell a shoe in several sizes, add one listing per size.
+- The **Shoes** page holds `[ninja_shoes]`. It lists the shoes, opens checkout with `?ninja_shoe=ID`, and shows the confirmation at `?ninja_order=KEY`.
+- **Checkout** asks for name, email, number of pairs (up to 10 and no more than are left in stock), and card details. The card number must pass the Luhn check and the expiry date must not have passed.
+- **Mock test cards**: `4242 4242 4242 4242` is approved. `4000 0000 0000 0002` is declined (card_declined). `4000 0000 0000 9995` is declined (insufficient_funds). Any other Luhn-valid number is approved.
+- Orders are stored as **Orders** in wp-admin, with the size bought. No card number or security code is stored, only the last four digits.
+- To use a real gateway later, implement `NinjaShows\Payments\PaymentGateway` and return it from the `ninja_shows_payment_gateway` filter.
+- Known limits: the stock is not locked, so two buyers at the same moment could both get the last pair. Activating the plugin adds four sample shoes, if the site has no shoes yet. Sites set up with the older show-ticket version keep their show data, which the shop no longer lists, and the old `[ninja_shows]` page needs to be replaced by the Shoes page.
 
 ## Run the site with Docker
 

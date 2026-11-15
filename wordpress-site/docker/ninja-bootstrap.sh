@@ -58,6 +58,7 @@ WP="wp --path=$WEB_ROOT --allow-root"
 
     $WP theme activate ninja-theme || exit 1
     $WP plugin activate ninja-hello || exit 1
+    $WP plugin activate ninja-shows || exit 1
 
     home_id=$($WP post create --post_type=page --post_title=Home --post_status=publish \
         --post_content='[ninja_hello name="Ada"]' --porcelain) || exit 1

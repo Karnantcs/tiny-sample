@@ -36,3 +36,59 @@ body {
     font-weight: bold;
     color: #2271b1;
 }
+
+.ninja-shoe,
+.ninja-checkout,
+.ninja-confirmation {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.ninja-shoe-meta,
+.ninja-shoe-stock,
+.ninja-mock-note {
+    color: #555;
+}
+
+.ninja-shoe-price {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.ninja-button {
+    display: inline-block;
+    background: #2271b1;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border: 0;
+    border-radius: 3px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ninja-checkout-form input {
+    display: block;
+    margin-top: 0.25rem;
+    padding: 0.4rem;
+    width: 100%;
+    max-width: 320px;
+    box-sizing: border-box;
+}
+
+.ninja-error {
+    background: #fcf0f1;
+    border-left: 4px solid #d63638;
+    padding: 0.5rem 1rem;
+}
+
+.ninja-field-error {
+    color: #d63638;
+    font-size: 0.9rem;
+}
+
+.ninja-confirmation dt {
+    font-weight: bold;
+}

@@ -9,6 +9,7 @@ RUN chmod +x /usr/local/bin/wp
 
 COPY wp-content/themes/ninja-theme /usr/src/wordpress/wp-content/themes/ninja-theme
 COPY wp-content/plugins/ninja-hello /usr/src/wordpress/wp-content/plugins/ninja-hello
+COPY wp-content/plugins/ninja-shows /usr/src/wordpress/wp-content/plugins/ninja-shows
 
 # Installs and configures WordPress on first start, then runs the official entrypoint.
 COPY docker/ninja-bootstrap.sh /usr/local/bin/ninja-bootstrap.sh
